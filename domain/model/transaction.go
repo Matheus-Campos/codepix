@@ -28,11 +28,13 @@ type Transactions struct {
 type Transaction struct {
 	Base              `valid:"required"`
 	AccountFrom       *Account `valid:"-"`
-	Amount            float64  `json:"amount" valid:"notnull"`
+	AccountFromID     string   `gorm:"column:account_from_id;type:uuid" valid:"notnull"`
+	Amount            float64  `json:"amount" gorm:"type:float" valid:"notnull"`
 	PixKeyTo          *PixKey  `valid:"-"`
-	Status            string   `json:"status" valid:"notnull"`
-	Description       string   `json:"description" valid:"notnull"`
-	CancelDescription string   `json:"cancel_description" valid:"-"`
+	PixKeyIdTo        string   `gorm:"column:pix_key_id_to;type:uuid" valid:"notnull"`
+	Status            string   `json:"status" gorm:"type:varchar(20)" valid:"notnull"`
+	Description       string   `json:"description" gorm:"type:varchar(255)" valid:"notnull"`
+	CancelDescription string   `json:"cancel_description" gorm:"type:varchar(255)" valid:"-"`
 }
 
 func (t *Transaction) isValid() error {
@@ -79,23 +81,44 @@ func NewTransaction(accountFrom *Account, amount float64, pixKeyTo *PixKey, desc
 }
 
 func (t *Transaction) Complete() error {
-	t.Status = TransactionCompleted
-	t.UpdatedAt = time.Now()
+	switch t.Status {
+	case TransactionCompleted:
+		return nil
+	case TransactionConfirmed:
+		t.Status = TransactionCompleted
+		t.UpdatedAt = time.Now()
 
-	return t.isValid()
+		return t.isValid()
+	default:
+		return errors.New("invalid status progression")
+	}
 }
 
 func (t *Transaction) Cancel(description string) error {
-	t.Status = TransactionError
-	t.CancelDescription = description
-	t.UpdatedAt = time.Now()
+	switch t.Status {
+	case TransactionError:
+		return nil
+	case TransactionCompleted:
+		return errors.New("transaction already complete")
+	default:
+		t.Status = TransactionError
+		t.CancelDescription = description
+		t.UpdatedAt = time.Now()
 
-	return t.isValid()
+		return t.isValid()
+	}
 }
 
 func (t *Transaction) Confirm() error {
-	t.Status = TransactionConfirmed
-	t.UpdatedAt = time.Now()
+	switch t.Status {
+	case TransactionConfirmed:
+		return nil
+	case TransactionPending:
+		t.Status = TransactionConfirmed
+		t.UpdatedAt = time.Now()
 
-	return t.isValid()
+		return t.isValid()
+	default:
+		return errors.New("invalid status progression")
+	}
 }
