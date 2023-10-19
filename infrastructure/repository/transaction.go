@@ -4,7 +4,7 @@ import (
 	"errors"
 
 	"github.com/Matheus-Campos/codepix/domain/model"
-	"gorm.io/gorm"
+	"github.com/jinzhu/gorm"
 )
 
 type TransactionRepositoryDb struct {

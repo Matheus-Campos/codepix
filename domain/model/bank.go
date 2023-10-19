@@ -7,6 +7,10 @@ import (
 	uuid "github.com/satori/go.uuid"
 )
 
+func init() {
+	govalidator.SetFieldsRequiredByDefault(true)
+}
+
 type Bank struct {
 	Base     `valid:"required"`
 	Code     string     `json:"code" gorm:"type:varchar(20)" valid:"notnull"`

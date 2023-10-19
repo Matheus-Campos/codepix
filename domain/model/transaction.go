@@ -25,6 +25,10 @@ type Transactions struct {
 	Transaction []Transaction
 }
 
+func init() {
+	govalidator.SetFieldsRequiredByDefault(true)
+}
+
 type Transaction struct {
 	Base              `valid:"required"`
 	AccountFrom       *Account `valid:"-"`

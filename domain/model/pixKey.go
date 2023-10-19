@@ -9,12 +9,15 @@ import (
 )
 
 type PixKeyRepositoryInterface interface {
+	AddBank(bank *Bank) error
+	AddAccount(account *Account) error
 	RegisterKey(pixKey *PixKey) (*PixKey, error)
 	FindKeyByKind(key string, kind string) (*PixKey, error)
-	AddBank(bank *Bank) error
-	AddAcount(account *Account) error
 	FindAccount(id string) (*Account, error)
-	FindBank(id string) (*Bank, error)
+}
+
+func init() {
+	govalidator.SetFieldsRequiredByDefault(true)
 }
 
 type PixKey struct {
